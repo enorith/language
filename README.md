@@ -1,2 +1,2 @@
 # language
-language componet for enorith
+language componet for [enorith](https://github.com/enorith/framework)
