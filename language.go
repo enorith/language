@@ -17,7 +17,7 @@ type languageValues struct {
 	mu        sync.RWMutex
 }
 
-func (lv languageValues) get(id string) (string, bool) {
+func (lv *languageValues) get(id string) (string, bool) {
 	lv.mu.RLock()
 	defer lv.mu.RUnlock()
 	v, b := lv.keyValues[id]
@@ -26,11 +26,11 @@ func (lv languageValues) get(id string) (string, bool) {
 }
 
 type language struct {
-	languageData map[string]languageValues
+	languageData map[string]*languageValues
 	mu           sync.RWMutex
 }
 
-func (l language) get(lang string) (languageValues, bool) {
+func (l *language) get(lang string) (*languageValues, bool) {
 	l.mu.RLock()
 	defer l.mu.RUnlock()
 	v, b := l.languageData[lang]
@@ -38,7 +38,7 @@ func (l language) get(lang string) (languageValues, bool) {
 	return v, b
 }
 
-func (l *language) set(lang string, values languageValues) {
+func (l *language) set(lang string, values *languageValues) {
 	l.mu.Lock()
 	l.languageData[lang] = values
 	l.mu.Unlock()
@@ -102,12 +102,12 @@ func T(key, id string, params ...map[string]string) (string, error) {
 // Register language data
 func Register(key, lang string, data map[string]string) {
 
-	v := languageValues{data, sync.RWMutex{}}
+	v := &languageValues{data, sync.RWMutex{}}
 	if le, ok := languageData.get(key); ok {
 		le.set(lang, v)
 		languageData.set(key, le)
 	} else {
-		l := &language{map[string]languageValues{}, sync.RWMutex{}}
+		l := &language{map[string]*languageValues{}, sync.RWMutex{}}
 		l.set(lang, v)
 		languageData.set(key, l)
 	}
